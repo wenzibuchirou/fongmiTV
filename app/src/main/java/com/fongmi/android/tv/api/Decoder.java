@@ -2,11 +2,16 @@ package com.fongmi.android.tv.api;
 
 import android.util.Base64;
 
+import com.fongmi.android.tv.server.Server;
 import com.fongmi.android.tv.utils.UrlUtil;
 import com.github.catvod.net.OkHttp;
+import com.github.catvod.utils.Asset;
 import com.github.catvod.utils.Json;
 import com.github.catvod.utils.Util;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -29,6 +34,37 @@ public class Decoder {
             if (httpUrl.querySize() == size) url = httpUrl.toString();
             return verify(url, res.body().string());
         }
+    }
+
+    public static boolean isAsset(String url) {
+        String scheme = UrlUtil.scheme(url);
+        return scheme.equals("asset") || scheme.equals("assets");
+    }
+
+    // Read a config JSON that is bundled inside the APK assets (e.g. assets://vod.json).
+    // Works fully offline — no network round-trip. The local server address is used as the
+    // base so relative .js references inside the JSON resolve to the bundled assets too.
+    public static String getJsonFromAsset(String url, String tag) throws Exception {
+        String name = assetName(url);
+        String base = Server.get().getAddress("/") + name;
+        InputStream is = Asset.open(name);
+        if (is == null) throw new Exception("Asset not found: " + name);
+        try (InputStream in = is) {
+            return verify(base, readString(in));
+        }
+    }
+
+    private static String assetName(String url) {
+        String scheme = UrlUtil.scheme(url);
+        return url.substring((scheme + "://").length());
+    }
+
+    private static String readString(InputStream is) throws IOException {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        byte[] buffer = new byte[8192];
+        int n;
+        while ((n = is.read(buffer)) != -1) os.write(buffer, 0, n);
+        return os.toString("UTF-8");
     }
 
     private static String verify(String url, String data) throws Exception {

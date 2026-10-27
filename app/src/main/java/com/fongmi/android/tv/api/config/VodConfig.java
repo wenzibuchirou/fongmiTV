@@ -99,6 +99,23 @@ public class VodConfig extends BaseConfig {
     }
 
     @Override
+    protected int getType() {
+        return VOD;
+    }
+
+    @Override
+    protected String builtInUrl() {
+        return "https://gh-proxy.com/https://raw.githubusercontent.com/wenzibuchirou/tvboxlist/master/jsm.json";
+    }
+
+    // Offline copy bundled in the APK: same config with relative paths already resolved, so the
+    // site list is available even when the network (or gh-proxy) is unreachable.
+    @Override
+    protected String fallbackUrl() {
+        return "assets://vod.json";
+    }
+
+    @Override
     protected Config defaultConfig() {
         return Config.vod();
     }
@@ -111,7 +128,7 @@ public class VodConfig extends BaseConfig {
 
     @Override
     protected void load(Config config) throws Throwable {
-        String json = Decoder.getJson(UrlUtil.convert(config.getUrl()), TAG);
+        String json = getJson(config, TAG);
         checkJson(config, Json.parse(json).getAsJsonObject());
     }
 
@@ -178,7 +195,13 @@ public class VodConfig extends BaseConfig {
 
     private void initSite(Config config, JsonObject object) {
         String spider = Json.safeString(object, "spider");
-        BaseLoader.get().parseJar(spider, true);
+        // The spider jar is optional: a download failure must not wipe out the whole site list.
+        // It will be fetched lazily the first time a jar-based site is actually used.
+        try {
+            BaseLoader.get().parseJar(spider, true);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
         setSites(Json.safeListElement(object, "sites").stream().map(e -> Site.objectFrom(e, spider)).distinct().collect(Collectors.toCollection(ArrayList::new)));
         Map<String, Site> items = Site.findAll().stream().collect(Collectors.toMap(Site::getKey, Function.identity()));
         getSites().forEach(site -> site.sync(items.get(site.getKey())));

@@ -102,6 +102,16 @@ public class LiveConfig extends BaseConfig {
     }
 
     @Override
+    protected int getType() {
+        return LIVE;
+    }
+
+    @Override
+    protected String builtInUrl() {
+        return "https://gh-proxy.com/https://raw.githubusercontent.com/wenzibuchirou/tvboxlist/master/jsm.json";
+    }
+
+    @Override
     protected Config defaultConfig() {
         return Config.live();
     }
@@ -114,7 +124,7 @@ public class LiveConfig extends BaseConfig {
 
     @Override
     protected void load(Config config) throws Throwable {
-        String json = Decoder.getJson(UrlUtil.convert(config.getUrl()), TAG);
+        String json = getJson(config, TAG);
         if (Json.isObj(json)) checkJson(config, Json.parse(json).getAsJsonObject());
         else parseText(config, json);
     }
@@ -186,7 +196,13 @@ public class LiveConfig extends BaseConfig {
 
     private void initLive(Config config, JsonObject object) {
         String spider = Json.safeString(object, "spider");
-        BaseLoader.get().parseJar(spider, false);
+        // A failed spider jar download must not abort the whole config load; the jar is fetched
+        // again lazily when a jar-based source is actually opened.
+        try {
+            BaseLoader.get().parseJar(spider, false);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
         setLives(Json.safeListElement(object, "lives").stream().map(e -> Live.objectFrom(e, spider)).distinct().collect(Collectors.toCollection(ArrayList::new)));
         Map<String, Live> items = Live.findAll().stream().collect(Collectors.toMap(Live::getName, Function.identity()));
         getLives().forEach(live -> live.sync(items.get(live.getName())));
