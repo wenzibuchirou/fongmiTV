@@ -1,0 +1,13 @@
+{
+  "name": "内置直播配置（离线）",
+  "notice": "【内置离线配置】这是打包在 APK 内的直播配置模板。请用你自己的直播配置内容覆盖 app/src/main/assets/live.json（可放 JSON 对象或 m3u/纯文本频道列表）；或在“设置-配置地址”里填写 assets://live.json 即可完全离线使用。",
+  "spider": "",
+  "lives": [],
+  "flags": [],
+  "rules": [],
+  "headers": [],
+  "hosts": [],
+  "ads": [],
+  "doh": [],
+  "proxy": []
+}

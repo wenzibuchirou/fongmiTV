@@ -1,0 +1,70 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.6.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preMobileArm64_v8aReleaseBuild UP-TO-DATE
+> Task :app:dataBindingMergeDependencyArtifactsMobileArm64_v8aRelease UP-TO-DATE
+> Task :app:generateMobileArm64_v8aReleaseResources UP-TO-DATE
+> Task :catvod:preBuild UP-TO-DATE
+> Task :catvod:preReleaseBuild UP-TO-DATE
+> Task :catvod:generateReleaseResources UP-TO-DATE
+> Task :catvod:packageReleaseResources UP-TO-DATE
+> Task :chaquo:preBuild UP-TO-DATE
+> Task :chaquo:preArm64_v8aReleaseBuild UP-TO-DATE
+> Task :chaquo:generateArm64_v8aReleaseResources UP-TO-DATE
+> Task :chaquo:packageArm64_v8aReleaseResources UP-TO-DATE
+> Task :quickjs:preBuild UP-TO-DATE
+> Task :quickjs:preReleaseBuild UP-TO-DATE
+> Task :quickjs:generateReleaseResources UP-TO-DATE
+> Task :quickjs:packageReleaseResources UP-TO-DATE
+> Task :app:mergeMobileArm64_v8aReleaseResources UP-TO-DATE
+> Task :app:packageMobileArm64_v8aReleaseResources UP-TO-DATE
+> Task :catvod:processReleaseNavigationResources UP-TO-DATE
+> Task :chaquo:processArm64_v8aReleaseNavigationResources UP-TO-DATE
+> Task :quickjs:processReleaseNavigationResources UP-TO-DATE
+> Task :app:processMobileArm64_v8aReleaseNavigationResources UP-TO-DATE
+> Task :app:parseMobileArm64_v8aReleaseLocalResources UP-TO-DATE
+> Task :catvod:parseReleaseLocalResources UP-TO-DATE
+> Task :catvod:generateReleaseRFile UP-TO-DATE
+> Task :chaquo:parseArm64_v8aReleaseLocalResources UP-TO-DATE
+> Task :chaquo:generateArm64_v8aReleaseRFile UP-TO-DATE
+> Task :quickjs:parseReleaseLocalResources UP-TO-DATE
+> Task :quickjs:generateReleaseRFile UP-TO-DATE
+> Task :app:dataBindingGenBaseClassesMobileArm64_v8aRelease UP-TO-DATE
+> Task :app:generateMobileArm64_v8aReleaseBuildConfig UP-TO-DATE
+> Task :app:generateMobileArm64_v8aReleaseRFile UP-TO-DATE
+> Task :catvod:compileReleaseKotlin NO-SOURCE
+> Task :catvod:javaPreCompileRelease UP-TO-DATE
+> Task :catvod:compileReleaseJavaWithJavac UP-TO-DATE
+> Task :catvod:bundleLibCompileToJarRelease UP-TO-DATE
+> Task :chaquo:extractArm64_v8aReleasePythonBuildPackages UP-TO-DATE
+> Task :chaquo:installArm64_v8aReleasePythonRequirements UP-TO-DATE
+> Task :chaquo:mergeArm64_v8aReleasePythonSources UP-TO-DATE
+> Task :chaquo:generateArm64_v8aReleasePythonProxies UP-TO-DATE
+> Task :chaquo:compileArm64_v8aReleaseKotlin NO-SOURCE
+> Task :chaquo:javaPreCompileArm64_v8aRelease UP-TO-DATE
+> Task :chaquo:compileArm64_v8aReleaseJavaWithJavac UP-TO-DATE
+> Task :chaquo:bundleLibCompileToJarArm64_v8aRelease UP-TO-DATE
+> Task :quickjs:compileReleaseKotlin NO-SOURCE
+> Task :quickjs:javaPreCompileRelease UP-TO-DATE
+> Task :quickjs:compileReleaseJavaWithJavac UP-TO-DATE
+> Task :quickjs:bundleLibCompileToJarRelease UP-TO-DATE
+> Task :app:compileMobileArm64_v8aReleaseKotlin NO-SOURCE
+> Task :app:javaPreCompileMobileArm64_v8aRelease UP-TO-DATE
+
+> Task :app:compileMobileArm64_v8aReleaseJavaWithJavac
+注: [1] Wrote GeneratedAppGlideModule with: [com.bumptech.glide.integration.okhttp3.OkHttpLibraryGlideModule, com.bumptech.glide.integration.avif.AvifGlideModule]
+注: 某些输入文件使用或覆盖了已过时的 API。
+注: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+注: D:\Code\fongmiTV\app\src\mobile\java\com\fongmi\android\tv\ui\fragment\TypeFragment.java使用了未经检查或不安全的操作。
+注: 有关详细信息, 请使用 -Xlint:unchecked 重新编译。
+
+[Incubating] Problems report is available at: file:///D:/Code/fongmiTV/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.6.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 24s
+39 actionable tasks: 1 executed, 38 up-to-date

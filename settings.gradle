@@ -13,6 +13,8 @@ plugins {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
+        // 本地 media3 fork 仓库（FongMi/media，含 mpvplayer，由 third_party/maven 提供）
+        maven { url = uri("$rootDir/third_party/maven") }
         mavenCentral()
         google()
         flatDir { dirs "$rootDir/app/libs" }

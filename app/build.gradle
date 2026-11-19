@@ -3,8 +3,11 @@ plugins {
 }
 
 def localProps = new Properties()
-rootProject.file('local.properties').withInputStream {
-    localProps.load(it)
+def localPropsFile = rootProject.file('local.properties')
+if (localPropsFile.exists()) {
+    localPropsFile.withInputStream {
+        localProps.load(it)
+    }
 }
 
 android {
@@ -50,11 +53,13 @@ android {
     }
 
     signingConfigs {
-        release {
-            storeFile file(localProps['storeFile'])
-            keyAlias localProps['keyAlias']
-            keyPassword localProps['storePassword']
-            storePassword localProps['storePassword']
+        if (localProps['storeFile']) {
+            release {
+                storeFile file(localProps['storeFile'])
+                keyAlias localProps['keyAlias']
+                keyPassword localProps['storePassword']
+                storePassword localProps['storePassword']
+            }
         }
     }
 
@@ -62,7 +67,8 @@ android {
         release {
             minifyEnabled = true
             shrinkResources = true
-            signingConfig = signingConfigs.release
+            // 无签名配置时回退到 debug 签名，保证 release 也能出包
+            signingConfig = localProps['storeFile'] ? signingConfigs.release : signingConfigs.debug
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro', 'proguard-rules-media.pro'
         }
     }
@@ -79,6 +85,19 @@ android {
     lint {
         disable 'UnsafeOptInUsageError'
         disable 'ExpiredTargetSdkVersion'
+    }
+
+    // 两个 rtmp 客户端库（LibRtmp-Client-for-Android 与 media3-datasource-rtmp 传递的 io.antmedia:rtmp-client）
+    // 都打包了同名 librtmp-jni.so，实为同一库，任选其一即可
+    packaging {
+        jniLibs {
+            pickFirsts += [
+                "lib/arm64-v8a/librtmp-jni.so",
+                "lib/armeabi-v7a/librtmp-jni.so",
+                "lib/x86/librtmp-jni.so",
+                "lib/x86_64/librtmp-jni.so"
+            ]
+        }
     }
 
     compileOptions {
@@ -128,6 +147,34 @@ dependencies {
     implementation libs.permissionx
     implementation libs.simple.xml
     implementation libs.textdrawable
+
+    // Media3 fork（FongMi/media，含 mpvplayer / ui-danmaku），由 third_party/maven 本地仓库提供
+    implementation "androidx.media3:media3-common:1.11.0-alpha01-fongmi"
+    implementation "androidx.media3:media3-container:1.11.0-alpha01-fongmi"
+    implementation "androidx.media3:media3-database:1.11.0-alpha01-fongmi"
+    implementation "androidx.media3:media3-datasource:1.11.0-alpha01-fongmi"
+    implementation "androidx.media3:media3-datasource-okhttp:1.11.0-alpha01-fongmi"
+    // media3-datasource-rtmp transitively pulls io.antmedia:rtmp-client, which ships the
+    // same io.antmedia.rtmp_client.* classes as the direct dependency
+    // com.github.mcxinyu:LibRtmp-Client-for-Android (mcxinyu's is a republish of the same
+    // package). Exclude the transitive one to avoid duplicate-class conflicts; mcxinyu's
+    // classes satisfy media3 at runtime.
+    implementation ("androidx.media3:media3-datasource-rtmp:1.11.0-alpha01-fongmi") {
+        exclude group: 'io.antmedia', module: 'rtmp-client'
+    }
+    implementation "androidx.media3:media3-decoder:1.11.0-alpha01-fongmi"
+    implementation "androidx.media3:media3-effect:1.11.0-alpha01-fongmi"
+    implementation "androidx.media3:media3-exoplayer:1.11.0-alpha01-fongmi"
+    implementation "androidx.media3:media3-exoplayer-dash:1.11.0-alpha01-fongmi"
+    implementation "androidx.media3:media3-exoplayer-hls:1.11.0-alpha01-fongmi"
+    implementation "androidx.media3:media3-exoplayer-rtsp:1.11.0-alpha01-fongmi"
+    implementation "androidx.media3:media3-exoplayer-smoothstreaming:1.11.0-alpha01-fongmi"
+    implementation "androidx.media3:media3-extractor:1.11.0-alpha01-fongmi"
+    implementation "androidx.media3:media3-mpvplayer:1.11.0-alpha01-fongmi"
+    implementation "androidx.media3:media3-session:1.11.0-alpha01-fongmi"
+    implementation "androidx.media3:media3-ui:1.11.0-alpha01-fongmi"
+    implementation "androidx.media3:media3-ui-danmaku:1.11.0-alpha01-fongmi"
+
     leanbackImplementation libs.leanback
     leanbackImplementation libs.androidautosize
     mobileImplementation libs.biometric

@@ -3,6 +3,12 @@ plugins {
     id 'com.chaquo.python'
 }
 
+def localProps = new Properties()
+def localPropsFile = rootProject.file('local.properties')
+if (localPropsFile.exists()) {
+    localPropsFile.withInputStream { localProps.load(it) }
+}
+
 android {
     namespace = 'com.fongmi.chaquo'
 
@@ -13,6 +19,9 @@ android {
         targetSdk libs.versions.targetSdk.get().toInteger()
         python {
             version = "3.10"
+            if (localProps['buildPython']) {
+                buildPython localProps['buildPython']
+            }
             pip {
                 install("-r", "requirements.txt")
             }

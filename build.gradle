@@ -18,3 +18,77 @@ project(':app').tasks.matching { it.name ==~ /assemble.+Release/ }.configureEach
         }
     }
 }
+
+// ---------------------------------------------------------------------------
+// 相容舊系統／舊安裝器：為 release APK 補 v1 (JAR) 簽名
+//
+// AGP 9.3.1 在 minSdk >= 24 時只會產生 v2 簽名，APK 內不含
+// META-INF/MANIFEST.MF、*.SF、*.RSA。Android 4.4~6.x 的 PackageParser 與部分
+// 第三方安裝器只認 v1 簽名，會直接回報「安裝包解析失敗」。
+// 這裡在出包後用 apksigner 補一次 v1（同時保留 v2），輸出 *-v1.apk。
+//
+// 注意：補 v1 不會降低 minSdk，Android 4.4 仍會因 minSdk=24 拒絕安裝，
+//       完整分析與替代方案見 docs/ANDROID_44_COMPAT.md。
+// ---------------------------------------------------------------------------
+def legacyProps = new Properties()
+def legacyLocalProps = rootProject.file('local.properties')
+if (legacyLocalProps.exists()) legacyLocalProps.withInputStream { legacyProps.load(it) }
+
+def findApksignerJar = {
+    def sdk = legacyProps['sdk.dir'] ?: System.getenv('ANDROID_HOME') ?: System.getenv('ANDROID_SDK_ROOT')
+    if (!sdk) return null
+    def buildToolsDir = new File(sdk.toString(), 'build-tools')
+    def candidates = buildToolsDir.listFiles()?.findAll {
+        it.isDirectory() && new File(it, 'lib/apksigner.jar').exists()
+    }
+    def chosen = candidates?.sort { a, b -> a.name <=> b.name }?.reverse()?.find { true }
+    return chosen ? new File(chosen, 'lib/apksigner.jar') : null
+}
+
+tasks.register('signLegacyV1') {
+    group = 'build'
+    description = '為 release APK 補 v1(JAR) 簽名，輸出 *-v1.apk（相容舊系統／舊安裝器）'
+    doLast {
+        def apksignerJar = findApksignerJar()
+        if (apksignerJar == null) {
+            throw new GradleException('找不到 apksigner.jar，請確認 local.properties 的 sdk.dir')
+        }
+        def customKs = legacyProps['storeFile'] ? rootProject.file(legacyProps['storeFile'].toString()) : null
+        def keystore = customKs ?: new File(System.getProperty('user.home'), '.android/debug.keystore')
+        if (!keystore.exists()) throw new GradleException("找不到簽章金鑰：${keystore}")
+        // 與 app/build.gradle 的 signingConfigs 保持一致
+        def keyAlias = customKs ? (legacyProps['keyAlias'] ?: 'androiddebugkey').toString() : 'androiddebugkey'
+        def storePassword = customKs ? (legacyProps['storePassword'] ?: '').toString() : 'android'
+        def javaExe = new File(System.getProperty('java.home'), 'bin/java')
+        if (!javaExe.exists()) javaExe = new File(System.getProperty('java.home'), 'bin/java.exe')
+        if (!javaExe.exists()) throw new GradleException("找不到 java 執行檔：${javaExe}")
+
+        def apks = fileTree("$rootDir/app/build/outputs/apk") { include '**/release/*.apk' }.files
+        if (apks.isEmpty()) throw new GradleException('找不到 release APK，請先執行 assembleRelease')
+        def outDir = file("$rootDir/Release/apk")
+        outDir.mkdirs()
+        apks.sort { it.name }.each { apk ->
+            def out = new File(outDir, apk.name.replace('.apk', '-v1.apk'))
+            def cmd = [javaExe.absolutePath, '-cp', apksignerJar.absolutePath,
+                       'com.android.apksigner.ApkSignerTool', 'sign',
+                       '--ks', keystore.absolutePath,
+                       '--ks-key-alias', keyAlias,
+                       '--ks-pass', "pass:${storePassword}".toString(),
+                       '--key-pass', "pass:${storePassword}".toString(),
+                       '--v1-signing-enabled', 'true',
+                       '--v2-signing-enabled', 'true',
+                       '--v3-signing-enabled', 'false',
+                       '--v4-signing-enabled', 'false',
+                       '--out', out.absolutePath, apk.absolutePath]
+            def proc = new ProcessBuilder(cmd).inheritIO().start()
+            if (proc.waitFor() != 0) {
+                throw new GradleException("apksigner 補簽失敗：${apk.name}")
+            }
+            logger.lifecycle("v1 補簽完成：${out.name}")
+        }
+    }
+}
+
+project(':app').tasks.matching { it.name == 'assembleRelease' }.configureEach {
+    finalizedBy rootProject.tasks.named('signLegacyV1')
+}

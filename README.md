@@ -32,6 +32,7 @@
 | minSdk  | 24（Android 7.0 Nougat）        |
 | abi     | `arm64-v8a`、`armeabi-v7a`     |
 | flavor  | `leanback`（電視版）、`mobile`（手機版） |
+| 相容性   | Android 4.4（API 19）無法安裝，會顯示「安裝包解析失敗」，詳見 [ANDROID_44_COMPAT.md](docs/ANDROID_44_COMPAT.md) |
 
 ```
 TV/
@@ -145,3 +146,4 @@ Live 配置可內嵌或獨立存放。完整欄位說明見 [CONFIG.md](docs/CON
 | [SPIDER.md](docs/SPIDER.md) | Spider 所有方法規格與回傳格式   |
 | [LOCAL.md](docs/LOCAL.md)   | 本地 HTTP API 所有端點完整說明 |
 | [LIVE.md](docs/LIVE.md)     | 直播來源格式完整說明           |
+| [ANDROID_44_COMPAT.md](docs/ANDROID_44_COMPAT.md) | Android 4.4 安裝失敗分析與 v1 補簽說明 |
